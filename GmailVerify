@@ -1,0 +1,48 @@
+from flask import Flask, request, render_template
+
+app = Flask(__name__)
+
+# Store verification codes and their associated user information
+verification_codes = {}
+
+
+@app.route('/', methods=['GET', 'POST'])
+def verification():
+    if request.method == 'POST':
+        email = request.form['email']
+        
+        # Generate a verification code (you can use a random code generation library)
+        verification_code = generate_verification_code()
+        
+        # Store the verification code and associated user email
+        verification_codes[verification_code] = email
+        
+        # Send the verification code to the user (you can use email/SMS services)
+        send_verification_code(email, verification_code)
+        
+        return 'Verification code has been sent to your email address.'
+    
+    return render_template('verification.html')
+
+
+@app.route('/verify', methods=['POST'])
+def verify():
+    verification_code = request.form['code']
+    
+    # Check if the verification code exists in the stored codes
+    if verification_code in verification_codes:
+        email = verification_codes[verification_code]
+        
+        # Perform verification process (e.g., mark the email as verified in a database)
+        mark_email_as_verified(email)
+        
+        # Remove the verification code from the stored codes
+        del verification_codes[verification_code]
+        
+        return 'Email verification successful!'
+    
+    return 'Invalid verification code.'
+
+
+if __name__ == '__main__':
+    app.run()
